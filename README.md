@@ -22,3 +22,4 @@ The Wemos Mini D1 is added as an ESPHome device in Home Assistant.
 
 ![8 LED WS2812 stripe](https://github.com/ltvanderkrogt/esphome-buffer-tank-monitor/blob/5d7355d51f4499c3ad0afcec4144e243f8d440a7/WS2812-5050-RGB-1-400x400.jpg)
 
+![buffer tank monitor.yaml](https://github.com/ltvanderkrogt/esphome-buffer-tank-monitor/blob/0a07c180772de59640a225fdb48356f2e3a5b19a/buffer%20tank%20monitor.yaml)
