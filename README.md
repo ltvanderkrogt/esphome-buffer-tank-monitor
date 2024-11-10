@@ -15,4 +15,4 @@ The colors are used to visually represent the status of the buffer tank, dependi
 The LED strip is connected to D2 of a Wemos Mini D1.
 The Wemos Mini D1 is added as an ESPHome device in Home Assistant. 
 
-![Buffer Tank](\buffervat_temp.jpg)
+![Buffer Tank](https://github.com/ltvanderkrogt/esphome-buffer-tank-monitor/blob/b95d7cf0896e7c8e9885a070d57d6b16f92aebb1/buffervat%20temp.jpg)
