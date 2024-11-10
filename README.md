@@ -12,9 +12,12 @@ Temperature color codes:
 * Red: Temperature above 50°C
 
 The colors are used to visually represent the status of the buffer tank, depending on the temperature at different heights.
+
 ![Buffer Tank](https://github.com/ltvanderkrogt/esphome-buffer-tank-monitor/blob/b95d7cf0896e7c8e9885a070d57d6b16f92aebb1/buffervat%20temp.jpg)
+
 The LED strip is connected to D2 of a Wemos Mini D1.
 The Wemos Mini D1 is added as an ESPHome device in Home Assistant. 
+
 ![Wemos mini d1 + LED strip](https://github.com/ltvanderkrogt/esphome-buffer-tank-monitor/blob/004b270ed4e56d30e2fed7afcd0e297cf155829f/wemos%20led%20strip.jpg)
 
 ![8 LED WS2812 stripe](https://github.com/ltvanderkrogt/esphome-buffer-tank-monitor/blob/5d7355d51f4499c3ad0afcec4144e243f8d440a7/WS2812-5050-RGB-1-400x400.jpg)
