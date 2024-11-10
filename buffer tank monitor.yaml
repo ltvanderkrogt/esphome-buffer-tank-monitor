@@ -16,11 +16,11 @@ logger:
 # Enable Home Assistant API
 api:
   encryption:
-    key: "x9DqwHW+AAQkoPpckVu8O1RGaW0l9EUGMJggaf4t6lM="
+    key: "your_encryption_key"
 
 ota:
 - platform: esphome
-  password: "eb713d3841a7967a0c0a16fb79764c93"
+  password: "your_OTA_password"
 
 wifi:
   ssid: !secret wifi_ssid
@@ -28,7 +28,7 @@ wifi:
 
   ap:
     ssid: "Watertemp-Buffervat"
-    password: "Zrb8PosgoBdX"
+    password: "password"
 
 captive_portal:
 web_server:
