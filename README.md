@@ -6,10 +6,11 @@ With the buffer tank monitor, the temperatures at these four levels are measured
 
 Temperature color codes:
 
-Blue: Temperature below 38°C
-Green: Temperature between 38°C and 43°C
-Orange: Temperature between 43°C and 50°C
-Red: Temperature above 50°C
+* Blue: Temperature below 38°C
+* Green: Temperature between 38°C and 43°C
+* Orange: Temperature between 43°C and 50°C
+* Red: Temperature above 50°C
+
 The colors are used to visually represent the status of the buffer tank, depending on the temperature at different heights.
 ![Buffer Tank](https://github.com/ltvanderkrogt/esphome-buffer-tank-monitor/blob/b95d7cf0896e7c8e9885a070d57d6b16f92aebb1/buffervat%20temp.jpg)
 The LED strip is connected to D2 of a Wemos Mini D1.
