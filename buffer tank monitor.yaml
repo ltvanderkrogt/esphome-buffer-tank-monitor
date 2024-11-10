@@ -1,0 +1,246 @@
+esphome:
+  name: watertemp-buffervat
+  friendly_name: watertemp-buffervat
+  on_boot:
+    priority: -10
+    then:
+      - delay: 10s
+      - script.execute: start_led_effect  # Start the LED effect after initializing
+
+esp8266:
+  board: d1_mini
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "x9DqwHW+AAQkoPpckVu8O1RGaW0l9EUGMJggaf4t6lM="
+
+ota:
+- platform: esphome
+  password: "eb713d3841a7967a0c0a16fb79764c93"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: "Watertemp-Buffervat"
+    password: "Zrb8PosgoBdX"
+
+captive_portal:
+web_server:
+
+switch: # heating sources & consumer
+  - platform: homeassistant
+    id: buffervat_element
+    entity_id: switch.buffervat_element_schakelaar
+  - platform: homeassistant
+    id: warmtepomp 
+    entity_id: switch.wp_warmtevraag_relay
+  - platform: homeassistant
+    id: kachelpomp
+    entity_id: switch.kachelpomp_stopcontact_1
+  - platform: homeassistant
+    id: zonneboiler
+    entity_id: switch.wereldbol_stopcontact_1
+  - platform: homeassistant
+    id: cvpomp
+    entity_id: switch.cv_ketel_stopcontact_1_2
+
+sensor: 
+  - platform: homeassistant
+    id: sensor_buffervat_t3_tap_water
+    entity_id: sensor.buffervat_t3_tap_water
+    name: t3
+
+  - platform: homeassistant
+    id: sensor_buffervat_t2_cv_warmte
+    entity_id: sensor.buffervat_t2_cv_warmte
+    name: t2
+
+  - platform: homeassistant
+    id: sensor_buffervat_t1_voorverwarmen
+    entity_id: sensor.buffervat_t1_voorverwarmen
+    name: t1
+
+  - platform: homeassistant
+    id: sensor_buffervat_t0_retour
+    entity_id: sensor.buffervat_t0_retour
+    name: t0 
+
+light:
+  - platform: neopixelbus
+    type: GRB
+    pin: D2
+    num_leds: 8
+    name: " Buffer Tank Strip"
+    variant: WS2812
+    id: neopixel_buffer_strip
+
+    effects:
+      - addressable_lambda:
+          name: "Buffer Tank Temperature Colors"
+          update_interval: 1s  # 1-second interval for blinking
+          lambda: |-
+            auto temp_to_color = [](float temperature) -> Color {
+              if (temperature < 38.0) {
+                return Color(0, 0, 255);  // Blue
+              } else if (temperature < 43.0) {
+                return Color(0, 255, 0);  // Green
+              } else if (temperature < 46.0) {
+                return Color(255, 200, 52);  // Orange
+              } else {
+                return Color(255, 0, 0);  // Red
+              }
+            };
+
+            float temps[] = {
+              id(sensor_buffervat_t0_retour).state,
+              id(sensor_buffervat_t1_voorverwarmen).state,
+              id(sensor_buffervat_t2_cv_warmte).state,
+              id(sensor_buffervat_t3_tap_water).state,
+              id(sensor_buffervat_t3_tap_water).state  // Duplicated for LED 6-7
+            };
+
+            bool cv_ketel_is_on = id(cvpomp).state;
+            bool wereldbol_is_on = id(zonneboiler).state;
+            bool kachelpomp_is_on = id(kachelpomp).state;
+            bool wp_warmtevraag_is_on = id(warmtepomp).state;
+            bool buffervat_element_is_on = id(buffervat_element).state;
+
+            // Iterate over LEDs, including LEDs 6 and 7 for buffervat element
+            for (int i = 0; i < 5; i++) {
+              Color color = temp_to_color(temps[i]);
+
+              if (i == 0) { // LED 0 for CV Pomp
+                if (cv_ketel_is_on && millis() / 1000 % 2 == 0) {
+                  it[0] = Color(0, 0, 0);  // Blink off
+                } else {
+                  it[0] = color;
+                }
+              } else if (i == 1) { // LED 1 for Zonnecollectoren
+                if (wereldbol_is_on && millis() / 1000 % 2 == 0) {
+                  it[1] = Color(0, 0, 0);  // Blink off
+                } else {
+                  it[1] = color;
+                }
+              } else if (i == 2) { // LEDs 2-3 for Kachel Pomp
+                if (kachelpomp_is_on && millis() / 1000 % 2 == 0) {
+                  it[2] = Color(0, 0, 0);  // Blink off
+                } else {
+                  it[2] = color;
+                  it[3] = color;
+                }
+              } else if (i == 3) { // LEDs 4-5 for Warmtevraag
+                if (wp_warmtevraag_is_on && millis() / 1000 % 2 == 0) {
+                  it[4] = Color(0, 0, 0);  // Blink off
+                } else {
+                  it[4] = color;
+                  it[5] = color;
+                }
+              } else if (i == 4) { // LEDs 6-7 for Buffervat Element
+                if (buffervat_element_is_on && millis() / 1000 % 2 == 0) {
+                  it[6] = Color(0, 0, 0);  // Blink off
+                } else {
+                  it[6] = color;
+                  it[7] = color;
+                }
+              }
+            }
+
+script:
+  - id: start_led_effect
+    then:
+      - light.turn_on:
+          id: neopixel_buffer_strip
+          brightness: 30%  # Set brightness to 30%
+          effect: "Buffer Tank Temperature Colors"  # Start the main temperature effect
+
+text_sensor: # http://watertemp-buffervat.local/ 
+  - platform: template
+    name: "T3"
+    lambda: |-
+      if (id(sensor_buffervat_t3_tap_water).has_state()) {
+        int rounded_temp = static_cast<int>(round(id(sensor_buffervat_t3_tap_water).state));
+        return {std::to_string(rounded_temp) + " °C"};
+      } else {
+        return {"No data"};
+      }
+      
+  - platform: template
+    name: "T2"
+    lambda: |-
+      if (id(sensor_buffervat_t2_cv_warmte).has_state()) {
+        int rounded_temp = static_cast<int>(round(id(sensor_buffervat_t2_cv_warmte).state));
+        return {std::to_string(rounded_temp) + " °C"};
+      } else {
+        return {"No data"};
+      }
+
+  - platform: template
+    name: "T1"
+    lambda: |-
+      if (id(sensor_buffervat_t1_voorverwarmen).has_state()) {
+        int rounded_temp = static_cast<int>(round(id(sensor_buffervat_t1_voorverwarmen).state));
+        return {std::to_string(rounded_temp) + " °C"};
+      } else {
+        return {"No data"};
+      }
+
+  - platform: template
+    name: "T0"
+    lambda: |-
+      if (id(sensor_buffervat_t0_retour).has_state()) {
+        int rounded_temp = static_cast<int>(round(id(sensor_buffervat_t0_retour).state));
+        return {std::to_string(rounded_temp) + " °C"};
+      } else {
+        return {"No data"};
+      }
+
+  - platform: template
+    name: "LED 1 cv pomp"
+    lambda: |-
+      if (id(cvpomp).state) {
+        return std::string("On");
+      } else {
+        return std::string("Off");
+      }
+
+  - platform: template
+    name: "LED 3 kachel pomp"
+    lambda: |-
+      if (id(kachelpomp).state) {
+        return std::string("On");
+      } else {
+        return std::string("Off");
+      }
+
+  - platform: template
+    name: "LED 7 warmtepomp"
+    lambda: |-
+      if (id(warmtepomp).state) {
+        return std::string("On");
+      } else {
+        return std::string("Off");
+      }
+
+  - platform: template
+    name: "LED 8 buffervat element"
+    lambda: |-
+      if (id(buffervat_element).state) {
+        return std::string("On");
+      } else {
+        return std::string("Off");
+      }
+
+  - platform: template
+    name: "LED 5 zonneboiler"
+    lambda: |-
+      if (id(zonneboiler).state) {
+        return std::string("On");
+      } else {
+        return std::string("Off");
+      }
